@@ -1,31 +1,33 @@
-// import * as fs from "fs";
-const fs = require("fs")
-// import * as rp from "request-promise-native"
-const rp = require("request-promise-native")
-// import * as puppet from "puppeteer";
-const puppet = require("puppeteer")
+// Import required modules
+const fs = require("fs");
+const puppet = require("puppeteer");
+const extractHTML = require("./extractor");
 
+// Opens a browser, navigates to the correct page, and scrapes the HTML content
 const getHTML = async () => {
-  const browser = await puppet.launch({headless:false});
-  const page = await browser.newPage();
-  await page.waitForResponse;
-  await page.goto("https://edabit.com/shuffle");
-  await page.mouse.click(0,0);
-  // await page.waitForTimeout(3000);
-  await page.waitForSelector(".huge", true);
-  await page.click(".huge");
-  console.log("clicked")
-  await page.waitForNavigation()
-  await page.waitForSelector(".instructions", true);
-  // const instructions = await page.$$(".instructions")
-  const instructions = await page.content();
-  console.log(instructions)
-  fs.writeFileSync("./output/instructions.html", instructions, (err) => {
-    if (err) throw err;
-    console.log('Instructions Scraped!')
-  })
-}
+  try {
+    const browser = await puppet.launch({headless:false});
+    const page = await browser.newPage();
+    await page.waitForResponse;
+    await page.goto("https://edabit.com/shuffle");
+    await page.mouse.click(0,0); // this closes a modal that prevents ".huge" from loading
+    await page.waitForSelector(".huge", true); // waits for ".huge" to load into the DOM
+    await page.click(".huge");
+    console.log("Modal Erradicated!");
+    await page.waitForNavigation();
+    await page.waitForSelector(".instructions", true); // waits for ".instructions" to load into the DOM
+    console.log("Scraping Webpage...");
+    const instructions = await page.content(); // copies entire html document
+    fs.writeFileSync("./output/scrape.html", instructions, err => { // write scraped html to output folder
+      if (err) throw err;
+      console.log('HTML file Created!');
+    })
+    console.log("Ending puppeteer session...");
+    await browser.close(); // ends puppeteer session
+    await extractHTML(); // Removes unwanted HTML content and formats the rest in markdown
+  } catch (err) {
+    throw err;
+  };
+};
 
-getHTML()
-
-// [0].childNodes[0].data
+getHTML();
