@@ -54,7 +54,8 @@ const generateMD = async () => {
 
   // Combining title and content into one string
   const mkdn = `__**${title}**__\n
-  ${instructions}
+  ${instructions}\n
+  __Challenge Scraped from:__ https://edabit.com/
   `
   return console.log("All Done!\n\n", mkdn)
 }
